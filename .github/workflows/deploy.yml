@@ -3,7 +3,7 @@ name: SSH into EC2 Instance and Deploy Site
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   ssh:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH private key
+      - name: Set up SSH private key for EC2
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
@@ -28,7 +28,7 @@ jobs:
         run: |
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-      - name: Set up SSH key for GitHub authentication
+      - name: Set up SSH key for GitHub access
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_id_rsa
