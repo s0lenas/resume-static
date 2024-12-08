@@ -24,10 +24,22 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
 
+      - name: Add GitHub to known hosts
+        run: |
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Set up SSH key for GitHub authentication
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_id_rsa
+          chmod 600 ~/.ssh/github_id_rsa
+          echo "Host github.com" >> ~/.ssh/config
+          echo "  IdentityFile ~/.ssh/github_id_rsa" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+
       - name: SSH into EC2 and deploy site
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_IP }} << 'EOF'
             sudo rm -rf /var/www/html/*
-            echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
             sudo git clone git@github.com:s0lenas/resume-static.git /var/www/html
           EOF
