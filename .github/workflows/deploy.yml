@@ -30,6 +30,6 @@ jobs:
       # Step 4: Deploy the static site using sudo
       - name: Deploy static site to EC2 with sudo
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@herkuskrisciunas.me << 'EOF'
             sudo rsync -avz --delete --exclude='.git*' /home/ubuntu/${GITHUB_WORKSPACE}/ ubuntu:/var/www/html/
           EOF
