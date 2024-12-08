@@ -10,24 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Set up SSH private key for EC2 access
       - name: Set up SSH private key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
+      # Step 3: Add EC2 to known hosts (avoid host key verification failure)
       - name: Add EC2 to known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
 
-      - name: Deploy static site to EC2
+      # Step 4: Deploy the static site using sudo
+      - name: Deploy static site to EC2 with sudo
         run: |
-          sudo rsync -avz --delete --exclude='.git*' ./ ubuntu@${{ secrets.VPS_IP }}:/var/www/html/
-          
-      - name: Restart NGINX
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_IP }} 'sudo systemctl restart nginx'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_IP }} << 'EOF'
+            sudo rsync -avz --delete --exclude='.git*' /home/ubuntu/${GITHUB_WORKSPACE}/ ubuntu:/var/www/html/
+          EOF
