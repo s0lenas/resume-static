@@ -24,9 +24,9 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
 
-      - name: SSH into EC2
+      - name: SSH into EC2 and deploy site
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.VPS_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_IP }} << 'EOF'
             sudo rm -rf /var/www/html/*
-            sudo cp -r public/* /var/www/html/
+            git clone git@github.com:s0lenas/resume-static.git /var/www/html
           EOF
