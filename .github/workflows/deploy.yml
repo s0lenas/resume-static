@@ -19,7 +19,7 @@ jobs:
       - name: Fix permissions on target directory
         run: |
           chmod 600 private_key.pem
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.VPS_IP }} "sudo chown -R ubuntu:ubuntu /var/www/html/"
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.VPS_IP }} "sudo chmod -R 755 /var/www/html/"
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
