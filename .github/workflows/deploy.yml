@@ -1,4 +1,4 @@
-name: SSH into EC2 Instance and Deploy Site
+name: Deploy Static Site to EC2
 
 on:
   push:
@@ -6,23 +6,28 @@ on:
       - main
 
 jobs:
-  ssh:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH private key for EC2
+      - name: Set up SSH private key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
           chmod 600 ~/.ssh/id_rsa
 
-      - name: SSH into EC2 and deploy site
+      - name: Add EC2 to known hosts
         run: |
-          ssh -v -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_IP }} << 'EOF'
-            sudo rm -rf /var/www/html/*
-            sudo git clone git@github.com:s0lenas/resume-static.git /var/www/html
-          EOF
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy static site to EC2
+        run: |
+          rsync -avz --delete --exclude='.git*' ./ ubuntu@${{ secrets.VPS_IP }}:/var/www/html/
+          
+      - name: Restart NGINX
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_IP }} 'sudo systemctl restart nginx'
