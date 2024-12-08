@@ -1,27 +1,32 @@
-name: Deploy Static Site
+name: SSH into EC2 Instance and Deploy Site
 
 on:
   push:
     branches:
-      - main
+      - main 
 
 jobs:
-  deploy:
+  ssh:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Run SSH Command
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.HOST }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        port: 22
-        script: |
-          sudo rm -rf /var/www/html/*
-          sudo cp -r public/* /var/www/html/
-        debug: true
+      - name: Set up SSH private key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add EC2 to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+
+      - name: SSH into EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.VPS_IP }} << 'EOF'
+            sudo rm -rf /var/www/html/*
+            sudo cp -r public/* /var/www/html/
+          EOF
