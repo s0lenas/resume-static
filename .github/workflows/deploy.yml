@@ -30,3 +30,10 @@ jobs:
           REMOTE_HOST: ${{ secrets.VPS_IP }}
           REMOTE_USER: ubuntu
           TARGET: /var/www/html/
+
+      - name: Restart Nginx
+        run: |
+          chmod 600 private_key.pem
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.VPS_IP }} "sudo systemctl restart nginx"
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
