@@ -17,25 +17,8 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
           chmod 600 ~/.ssh/id_rsa
-
-      - name: Add EC2 to known hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
-
-      - name: Add GitHub to known hosts
-        run: |
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-      - name: Set up SSH key for GitHub access
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_id_rsa
-          chmod 600 ~/.ssh/github_id_rsa
-          echo "Host github.com" >> ~/.ssh/config
-          echo "  IdentityFile ~/.ssh/github_id_rsa" >> ~/.ssh/config
-          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
 
       - name: SSH into EC2 and deploy site
         run: |
